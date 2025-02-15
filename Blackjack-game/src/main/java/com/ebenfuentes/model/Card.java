@@ -1,4 +1,4 @@
-package model;
+package com.ebenfuentes.model;
 
 public class Card {
 

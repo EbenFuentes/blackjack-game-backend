@@ -1,4 +1,4 @@
-package model;
+package com.ebenfuentes.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
