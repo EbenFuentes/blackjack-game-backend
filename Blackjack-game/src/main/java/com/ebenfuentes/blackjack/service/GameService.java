@@ -1,4 +1,4 @@
-package com.ebenfuentes.service;
+package com.ebenfuentes.blackjack.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,9 +7,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.ebenfuentes.model.Card;
-import com.ebenfuentes.model.Player;
-import com.ebenfuentes.repository.PlayerRepository;
+import com.ebenfuentes.blackjack.model.Card;
+import com.ebenfuentes.blackjack.model.Player;
+import com.ebenfuentes.blackjack.repository.PlayerRepository;
 
 @Service
 public class GameService {

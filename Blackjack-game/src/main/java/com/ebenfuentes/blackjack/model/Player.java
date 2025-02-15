@@ -1,4 +1,4 @@
-package com.ebenfuentes.model;
+package com.ebenfuentes.blackjack.model;
 
 
 
