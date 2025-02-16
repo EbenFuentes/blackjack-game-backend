@@ -38,9 +38,10 @@ public class PlayerController {
 
     // ✅ Start a game for a player
     @PostMapping("/{id}/start")
-    public void startGame(@PathVariable int id) {
-        gameService.startGame(id);
+    public Map<String, Object> startGame(@PathVariable int id) {
+        return gameService.startGame(id); // ✅ Return the game state as JSON
     }
+
 
     // ✅ Player hits (gets a new card)
     @PostMapping("/{id}/hit")

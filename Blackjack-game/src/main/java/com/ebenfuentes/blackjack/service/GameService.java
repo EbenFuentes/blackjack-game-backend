@@ -59,7 +59,7 @@ public class GameService {
 
 
     // ✅ Start game (deal cards after bet)
-    public void startGame(int playerId) {
+    public Map<String, Object> startGame(int playerId) {
         Optional<Player> optionalPlayer = playerRepository.findById(playerId);
         if (optionalPlayer.isPresent()) {
             Player player = optionalPlayer.get();
@@ -100,8 +100,52 @@ public class GameService {
             handRepository.save(hand);
             handRepository.save(dealerHand);
             playerRepository.save(player);
+
+            // ✅ Prepare response similar to "hand-value" endpoint
+            return generateHandDetailsResponse(player);
         }
+        throw new RuntimeException("Player not found.");
     }
+    
+    private Map<String, Object> generateHandDetailsResponse(Player player) {
+        Map<String, Object> response = new LinkedHashMap<>(); // Ensures correct order
+        Hand playerHand = player.getHand();
+        Hand dealerHand = player.getDealerHand();
+
+        // ✅ Include player's cards and hand value
+        response.put("playerCards", getCardDetails(playerHand.getCards()));
+        response.put("handValue", playerHand.getTotalValue());
+        response.put("bet", player.getBet());
+
+        // ✅ Include dealer's face-up card (only the first card)
+        if (!dealerHand.getCards().isEmpty()) {
+            Card dealerFaceUpCard = dealerHand.getCards().get(0);
+            Map<String, String> dealerCardDetails = new HashMap<>();
+            dealerCardDetails.put("rank", dealerFaceUpCard.getRank());
+            dealerCardDetails.put("suit", dealerFaceUpCard.getSuit());
+            response.put("dealerFaceUpCard", dealerCardDetails);
+            response.put("dealerHandValue", dealerFaceUpCard.getValue()); // ✅ Show only the face-up card value
+        } else {
+            response.put("dealerFaceUpCard", "Unknown");
+            response.put("dealerHandValue", 0);
+        }
+
+        return response;
+    }
+    
+    private List<Map<String, String>> getCardDetails(List<Card> cards) {
+        List<Map<String, String>> cardList = new ArrayList<>();
+        for (Card card : cards) {
+            Map<String, String> cardDetails = new HashMap<>();
+            cardDetails.put("rank", card.getRank());
+            cardDetails.put("suit", card.getSuit());
+            cardList.add(cardDetails);
+        }
+        return cardList;
+    }
+
+
+
 
 
     // ✅ Player hits
@@ -111,6 +155,7 @@ public class GameService {
             Player player = optionalPlayer.get();
             Hand playerHand = player.getHand();
             Hand dealerHand = player.getDealerHand();
+            boolean isGameOver = false;
 
             // ✅ Player receives a new card
             Card newCard = null;
@@ -122,7 +167,11 @@ public class GameService {
             playerRepository.save(player);
 
             // ✅ Prepare response with updated game state
-            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> response = new LinkedHashMap<>(); // ✅ Ensures proper ordering
+
+            // ✅ Include player and dealer values (Dealer value will be set later if game ends)
+            response.put("playerValue", playerHand.getTotalValue());
+            response.put("dealerValue", "Hidden"); // Placeholder, updated if game ends
 
             // ✅ Include player's hand details
             List<Map<String, String>> playerCardsList = new ArrayList<>();
@@ -133,39 +182,59 @@ public class GameService {
                 playerCardsList.add(cardDetails);
             }
             response.put("playerCards", playerCardsList);
-            response.put("handValue", playerHand.getTotalValue());
 
-            // ✅ Include bet amount
-            response.put("bet", player.getBet());
-
-            // ✅ Include dealer's face-up card & value
+            // ✅ Include dealer's face-up card ONLY if the game is still in progress
             if (dealerHand != null && !dealerHand.getCards().isEmpty()) {
                 Card dealerFaceUpCard = dealerHand.getCards().get(0);
                 Map<String, String> dealerCardDetails = new HashMap<>();
                 dealerCardDetails.put("rank", dealerFaceUpCard.getRank());
                 dealerCardDetails.put("suit", dealerFaceUpCard.getSuit());
                 response.put("dealerFaceUpCard", dealerCardDetails);
-                response.put("dealerHandValue", dealerFaceUpCard.getValue()); // ✅ Only show face-up card value
+
+                // ✅ Only show partial dealer hand value if game is in progress
+                if (!isGameOver) {
+                    response.put("dealerHandValue", dealerFaceUpCard.getValue());
+                }
             } else {
                 response.put("dealerFaceUpCard", "Unknown");
-                response.put("dealerHandValue", 0);
             }
 
-            // ✅ If the player busts, auto-end game & return result
+            // ✅ If the player busts, auto-end game & return full game results
             if (playerHand.getTotalValue() > 21) {
                 response.put("status", "Bust! Dealer wins.");
+                isGameOver = true;
+
+                // ✅ Evaluate game and append results
                 Map<String, Object> result = evaluateGame(player);
                 response.putAll(result);
-                player.setGameStarted(false); // ✅ Mark game as over
+
+                // ✅ Show dealer's full hand details only after the game ends
+                List<Map<String, String>> dealerCardsList = new ArrayList<>();
+                for (Card card : dealerHand.getCards()) {
+                    Map<String, String> cardDetails = new HashMap<>();
+                    cardDetails.put("rank", card.getRank());
+                    cardDetails.put("suit", card.getSuit());
+                    dealerCardsList.add(cardDetails);
+                }
+                response.put("dealerHand", dealerCardsList);
+                response.put("dealerValue", dealerHand.getTotalValue()); // ✅ Now correctly shown only after game ends
+
+                // ✅ Mark game as over
+                player.setGameStarted(false);
                 playerRepository.save(player);
             } else {
                 response.put("status", "Continue playing.");
             }
 
+            // ✅ Include bet amount only once
+            response.put("bet", player.getBet());
+
             return response;
         }
         throw new RuntimeException("Player not found.");
     }
+
+
 
     
     // ✅ Player stands (dealer reveals their hand)
@@ -200,10 +269,12 @@ public class GameService {
         if (optionalPlayer.isPresent()) {
             Player player = optionalPlayer.get();
             int betAmount = player.getBet();
+            int doubledBet = betAmount * 2; // ✅ Double the bet
 
             // ✅ Ensure player has enough balance to double down
-            if (betAmount <= player.getBalance()) {
-                player.placeBet(betAmount); // Double the bet
+            if (doubledBet <= player.getBalance()) {
+                player.setBet(doubledBet); // ✅ Set the new bet amount
+                player.setBalance(player.getBalance() - betAmount); // ✅ Deduct additional bet amount
 
                 // ✅ Player receives one last card
                 Card lastCard = null;
@@ -232,6 +303,7 @@ public class GameService {
         }
         throw new RuntimeException("Player not found.");
     }
+
 
 
 
@@ -371,7 +443,7 @@ public class GameService {
 
  // ✅ Determine winner & include bet amount in the response
     private Map<String, Object> evaluateGame(Player player) {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new LinkedHashMap<>(); // ✅ Ensures correct key order
         int playerValue = player.getHand().getTotalValue();
         int dealerValue = player.getDealerHand().getTotalValue();
         int betAmount = player.getBet();
@@ -382,23 +454,8 @@ public class GameService {
         result.put("dealerValue", dealerValue);
 
         // ✅ Include the final hands (Player & Dealer)
-        List<Map<String, String>> playerCardsList = new ArrayList<>();
-        for (Card card : player.getHand().getCards()) {
-            Map<String, String> cardDetails = new HashMap<>();
-            cardDetails.put("rank", card.getRank());
-            cardDetails.put("suit", card.getSuit());
-            playerCardsList.add(cardDetails);
-        }
-        result.put("playerHand", playerCardsList);
-
-        List<Map<String, String>> dealerCardsList = new ArrayList<>();
-        for (Card card : player.getDealerHand().getCards()) {
-            Map<String, String> cardDetails = new HashMap<>();
-            cardDetails.put("rank", card.getRank());
-            cardDetails.put("suit", card.getSuit());
-            dealerCardsList.add(cardDetails);
-        }
-        result.put("dealerHand", dealerCardsList);
+        result.put("playerHand", getCardDetails(player.getHand().getCards()));
+        result.put("dealerHand", getCardDetails(player.getDealerHand().getCards()));
 
         // ✅ Determine the outcome
         if (playerValue > 21) {
@@ -420,7 +477,7 @@ public class GameService {
             result.put("winner", "Tie");
             result.put("message", "It's a push!");
             player.push();
-            winnings = 0; // No change in balance
+            winnings = 0;
         }
 
         // ✅ Keep bet details grouped together
@@ -431,6 +488,8 @@ public class GameService {
         playerRepository.save(player); // Save new balance
         return result;
     }
+
+
 
 
 
