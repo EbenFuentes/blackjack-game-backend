@@ -11,11 +11,18 @@ public class Hand {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-	@OneToMany(mappedBy = "hand", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "hand", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Card> cards = new ArrayList<>();
 
-    public Hand() {}
-    
+    private boolean isDealerHand; // Add a flag to track if this hand belongs to the dealer
+
+    public Hand() {
+        this.isDealerHand = false; // Default is player hand
+    }
+
+    public Hand(boolean isDealer) {
+        this.isDealerHand = isDealer;
+    }
 
     public Integer getId() {
 		return id;
@@ -25,8 +32,12 @@ public class Hand {
 		this.id = id;
 	}
 
+	public boolean isDealerHand() {
+        return isDealerHand;
+    }
+
     public void addCard(Card card) {
-    	card.setHand(this);
+        card.setHand(this);
         cards.add(card);
     }
 
@@ -39,15 +50,17 @@ public class Hand {
         int aceCount = 0;
 
         for (Card card : cards) {
-            total += card.getValue();
             if (card.getRank().equals("A")) {
-                aceCount++;
+                aceCount++;  // Count Aces separately
+                total += 1;  // Start by counting Aces as 1
+            } else {
+                total += card.getValue();
             }
         }
 
-        // Adjust for Aces (Ace can be 1 or 11)
-        while (total > 21 && aceCount > 0) {
-            total -= 10;
+        // ✅ Convert Aces from 1 to 11 where possible (without busting)
+        while (aceCount > 0 && total + 10 <= 21) {
+            total += 10;
             aceCount--;
         }
 

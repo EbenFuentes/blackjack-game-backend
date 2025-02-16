@@ -2,12 +2,7 @@ package com.ebenfuentes.blackjack.controller;
 
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.ebenfuentes.blackjack.model.Player;
 import com.ebenfuentes.blackjack.service.GameService;
@@ -22,37 +17,62 @@ public class PlayerController {
         this.gameService = gameService;
     }
 
-    // Create a player
+    // ✅ Create a player
     @PostMapping
     public Player createPlayer(@RequestBody Player player) {
         return gameService.createPlayer(player.getUsername(), player.getBalance());
     }
 
-    // Get player status
-    @GetMapping("/{id}")
-    public String getPlayerStatus(@PathVariable int id) {
-        return gameService.checkGameStatus(id);
+    // ✅ Player places a bet
+    @PostMapping("/{id}/bet")
+    public void placeBet(@PathVariable int id, @RequestBody Map<String, Integer> request) {
+        int betAmount = request.get("amount");
+        gameService.placeBet(id, betAmount);
     }
 
-    // Start a game for a player
+    // ✅ Get player status (Fixed to return JSON)
+    @GetMapping("/{id}")
+    public Map<String, Object> getPlayerStatus(@PathVariable int id) {
+        return gameService.checkGameStatus(id);  // Now returns a JSON response
+    }
+
+    // ✅ Start a game for a player
     @PostMapping("/{id}/start")
     public void startGame(@PathVariable int id) {
         gameService.startGame(id);
     }
 
-    // Player hits (gets a new card)
+    // ✅ Player hits (gets a new card)
     @PostMapping("/{id}/hit")
-    public void hit(@PathVariable int id) {
-        gameService.hit(id);
+    public Map<String, Object> hit(@PathVariable int id) {
+        return gameService.hit(id); // ✅ Return response from hit()
     }
     
-    // Get current hand value for a player
+    // ✅ Get current hand value for a player
     @GetMapping("/{id}/hand-value")
     public Map<String, Object> getPlayerHandDetails(@PathVariable int id) {
         return gameService.getPlayerHandDetails(id);
     }
+    
+    // ✅ Player stands (dealer plays)
+    @PostMapping("/{id}/stand")
+    public Map<String, Object> stand(@PathVariable int id) {
+        return gameService.stand(id);
+    }
 
-    // Reset game for a player
+    // ✅ Player doubles down
+    @PostMapping("/{id}/double-down")
+    public Map<String, Object> doubleDown(@PathVariable int id) {
+        return gameService.doubleDown(id);
+    }
+
+    // ✅ Player splits
+    @PostMapping("/{id}/split")
+    public void split(@PathVariable int id) {
+        gameService.split(id);
+    }
+
+    // ✅ Reset game for a player
     @PostMapping("/{id}/reset")
     public void resetGame(@PathVariable int id) {
         gameService.resetGame(id);
