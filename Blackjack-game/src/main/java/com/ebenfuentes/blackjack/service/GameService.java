@@ -2,7 +2,9 @@ package com.ebenfuentes.blackjack.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -109,18 +111,26 @@ public class GameService {
     }
 
     // Get the player's hand value
-    public int getPlayerHandValue(int playerId) {
+    public Map<String, Object> getPlayerHandDetails(int playerId) {
         Optional<Player> optionalPlayer = playerRepository.findById(playerId);
+        
         if (optionalPlayer.isPresent()) {
             Player player = optionalPlayer.get();
 
             if (player.getHand() != null) {
-                System.out.println("Hand ID: " + player.getHand().getId());  // Debugging
-                System.out.println("Hand has cards: " + player.getHand().getCards().size());
+                Map<String, Object> response = new HashMap<>();
+                response.put("handValue", player.getHand().getTotalValue());
 
-                return player.getHand().getTotalValue();
-            } else {
-                System.out.println("Hand is NULL for player ID: " + playerId);
+                List<Map<String, String>> cardsList = new ArrayList<>();
+                for (Card card : player.getHand().getCards()) {
+                    Map<String, String> cardDetails = new HashMap<>();
+                    cardDetails.put("rank", card.getRank());
+                    cardDetails.put("suit", card.getSuit());
+                    cardsList.add(cardDetails);
+                }
+
+                response.put("cards", cardsList);
+                return response;
             }
         }
         throw new RuntimeException("Player not found.");

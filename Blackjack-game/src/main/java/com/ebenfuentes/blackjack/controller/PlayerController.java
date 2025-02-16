@@ -1,5 +1,7 @@
 package com.ebenfuentes.blackjack.controller;
 
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,8 +48,8 @@ public class PlayerController {
     
     // Get current hand value for a player
     @GetMapping("/{id}/hand-value")
-    public int getPlayerHandValue(@PathVariable int id) {
-        return gameService.getPlayerHandValue(id);
+    public Map<String, Object> getPlayerHandDetails(@PathVariable int id) {
+        return gameService.getPlayerHandDetails(id);
     }
 
     // Reset game for a player
