@@ -43,6 +43,12 @@ public class PlayerController {
     public void hit(@PathVariable int id) {
         gameService.hit(id);
     }
+    
+    // Get current hand value for a player
+    @GetMapping("/{id}/hand-value")
+    public int getPlayerHandValue(@PathVariable int id) {
+        return gameService.getPlayerHandValue(id);
+    }
 
     // Reset game for a player
     @PostMapping("/{id}/reset")

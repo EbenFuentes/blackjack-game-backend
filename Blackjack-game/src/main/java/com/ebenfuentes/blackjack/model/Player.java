@@ -2,11 +2,13 @@ package com.ebenfuentes.blackjack.model;
 
 
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class Player {
@@ -18,7 +20,8 @@ public class Player {
 	private String username;
 	private int balance;
 	
-	@Transient
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "hand_id")
 	private Hand hand;
 	
 	public Player() {
@@ -61,7 +64,12 @@ public class Player {
 	public void setBalance(int balance) {
 		this.balance = balance;
 	}
-	
+	public Hand getHand() {
+		return hand;
+	}
+	public void setHand(Hand hand) {
+        this.hand = hand;
+    }
 	
 
 }

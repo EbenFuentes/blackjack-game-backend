@@ -1,27 +1,39 @@
 package com.ebenfuentes.blackjack.model;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+@Entity
 public class Hand {
-    private final List<Card> cards;
 
-    public Hand() {
-        this.cards = new ArrayList<>();
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    // Add a card to the hand
+	@OneToMany(mappedBy = "hand", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Card> cards = new ArrayList<>();
+
+    public Hand() {}
+    
+
+    public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
     public void addCard(Card card) {
+    	card.setHand(this);
         cards.add(card);
     }
 
-    // Clear the hand (when a new game starts)
     public void clear() {
         cards.clear();
     }
 
-    // Get the total value of the hand, handling Aces properly
     public int getTotalValue() {
         int total = 0;
         int aceCount = 0;
@@ -42,8 +54,7 @@ public class Hand {
         return total;
     }
 
-    // Return an unmodifiable list to prevent external modifications
     public List<Card> getCards() {
-        return Collections.unmodifiableList(cards);
+        return cards;
     }
 }
