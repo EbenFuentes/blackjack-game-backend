@@ -4,90 +4,97 @@ import jakarta.persistence.*;
 
 @Entity
 public class Player {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
-    private Integer id;
-    
-    private String username;
-    private int balance;
-    private int bet; // New field for bet amount
-    
-    private boolean gameStarted = false;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "hand_id")
-    private Hand hand; // Player's hand
-    private boolean hasStood = false;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "dealer_hand_id")
-    private Hand dealerHand; // Dealer's hand
+	private String username;
+	private int balance;
+	private int bet; // New field for bet amount
 
-    public Player() {
-        this.hand = new Hand();
-        this.dealerHand = new Hand();
-    }
+	private boolean gameStarted = false;
 
-    public Player(String username, int balance) {
-        this.setUsername(username);
-        this.balance = balance;
-        this.hand = new Hand();
-        this.dealerHand = new Hand(true);
-    }
-    
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "hand_id")
+	private Hand hand; // Player's hand
+	private boolean hasStood = false;
 
-    public void placeBet(int amount) {
-        if (amount > balance) {
-            throw new IllegalArgumentException("Insufficient balance to place bet.");
-        }
-        this.bet = amount;
-        this.balance -= amount;
-    }
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "dealer_hand_id")
+	private Hand dealerHand; // Dealer's hand
 
-    public void winBet() {
-        this.balance += bet * 2; // Winning doubles the bet
-        this.bet = 0;
-    }
+	public Player() {
+		this.hand = new Hand();
+		this.dealerHand = new Hand();
+	}
 
-    public void loseBet() {
-        this.bet = 0;
-    }
+	public Player(String username, int balance) {
+		this.setUsername(username);
+		this.balance = balance;
+		this.hand = new Hand();
+		this.dealerHand = new Hand(true);
+	}
 
-    public void push() { // Tie scenario
-        this.balance += bet;
-        this.bet = 0;
-    }
+	public void placeBet(int amount) {
+		if (amount > balance) {
+			throw new IllegalArgumentException("Insufficient balance to place bet.");
+		}
+		this.bet = amount;
+		this.balance -= amount;
+	}
 
-    public int getBet() {
-        return bet;
-    }
+	public void winBet() {
+		this.balance += bet * 2; // Winning doubles the bet
+		this.bet = 0;
+	}
 
-    public void resetHand() {
-        hand.clear();
-        dealerHand.clear();
-        hasStood = false;
-    }
+	public void loseBet() {
+		this.bet = 0;
+	}
 
-    public int getBalance() {
-        return balance;
-    }
+	public void push() { // Tie scenario
+		this.balance += bet;
+		this.bet = 0;
+	}
 
-    public void setBalance(int balance) {
-        this.balance = balance;
-    }
+	public int getBet() {
+		return bet;
+	}
 
-    public void setBet(int bet) {
+	public void resetHand() {
+		hand.clear();
+		dealerHand.clear();
+		hasStood = false;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public int getBalance() {
+		return balance;
+	}
+
+	public void setBalance(int balance) {
+		this.balance = balance;
+	}
+
+	public void setBet(int bet) {
 		this.bet = bet;
 	}
 
 	public Hand getHand() {
-        return hand;
-    }
+		return hand;
+	}
 
-    public Hand getDealerHand() {
-        return dealerHand;
-    }
+	public Hand getDealerHand() {
+		return dealerHand;
+	}
 
 	public String getUsername() {
 		return username;
@@ -96,23 +103,23 @@ public class Player {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	
+
 	public void setHand(Hand hand) {
-	    this.hand = hand;
+		this.hand = hand;
 	}
 
 	public void setDealerHand(Hand dealerHand) {
-	    this.dealerHand = dealerHand;
+		this.dealerHand = dealerHand;
 	}
-	
+
 	public void receiveCard(Card card) {
-	    if (hand != null) {
-	        hand.addCard(card);
-	    }
+		if (hand != null) {
+			hand.addCard(card);
+		}
 	}
-	
+
 	public int calculateHandValue() {
-	    return hand.getTotalValue();
+		return hand.getTotalValue();
 	}
 
 	public boolean hasStood() {
@@ -130,8 +137,5 @@ public class Player {
 	public void setGameStarted(boolean gameStarted) {
 		this.gameStarted = gameStarted;
 	}
-
-
-
 
 }

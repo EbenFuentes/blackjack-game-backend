@@ -14,13 +14,13 @@ public class Deck {
 
 	public void initializeDeck() {
 
-		String[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+		String[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace" };
 		String[] suits = { "Spades", "Hearts", "Diamonds", "Clubs" };
 		deckOfCards = new ArrayList<>(52);
 
 		for (String rank : ranks) {
 			for (String suit : suits) {
-				int value = rank.matches("\\d+") ? Integer.parseInt(rank) : rank.equals("A") ? 11 : 10;
+				int value = rank.matches("\\d+") ? Integer.parseInt(rank) : rank.equals("Ace") ? 11 : 10;
 				deckOfCards.add(new Card(rank, suit, value));
 			}
 		}

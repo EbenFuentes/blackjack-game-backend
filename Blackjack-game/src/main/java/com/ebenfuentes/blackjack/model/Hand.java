@@ -58,7 +58,7 @@ public class Hand {
             }
         }
 
-        // ✅ Convert Aces from 1 to 11 where possible (without busting)
+        // Convert Aces from 1 to 11 where possible (without busting)
         while (aceCount > 0 && total + 10 <= 21) {
             total += 10;
             aceCount--;

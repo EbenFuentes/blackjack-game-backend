@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.ebenfuentes.blackjack.model.Player;
 import com.ebenfuentes.blackjack.service.GameService;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/players")
 public class PlayerController {
@@ -78,4 +79,12 @@ public class PlayerController {
     public void resetGame(@PathVariable int id) {
         gameService.resetGame(id);
     }
+    
+ // ✅ Get player balance
+    @GetMapping("/{id}/balance")
+    public Map<String, Object> getPlayerBalance(@PathVariable int id) {
+        return gameService.getPlayerBalance(id);
+    }
+
+    
 }
