@@ -138,6 +138,7 @@ public class GameService {
 		Map<String, Object> response = new LinkedHashMap<>(); // Ensures correct order
 		Hand playerHand = player.getHand();
 		Hand dealerHand = player.getDealerHand();
+		Card dealerFaceUpCard = dealerHand.getCards().get(0);
 
 		// Include player's cards and hand value
 		response.put("playerCards", getCardDetails(playerHand.getCards()));
@@ -146,7 +147,6 @@ public class GameService {
 
 		// Include dealer's face-up card (only the first card)
 		if (!dealerHand.getCards().isEmpty()) {
-			Card dealerFaceUpCard = dealerHand.getCards().get(0);
 			Map<String, String> dealerCardDetails = new HashMap<>();
 			dealerCardDetails.put("rank", dealerFaceUpCard.getRank());
 			dealerCardDetails.put("suit", dealerFaceUpCard.getSuit());
@@ -154,7 +154,7 @@ public class GameService {
 			response.put("dealerHandValue", dealerFaceUpCard.getValue()); // ✅ Show only the face-up card value
 		} else {
 			response.put("dealerFaceUpCard", "Unknown");
-			response.put("dealerHandValue", 0);
+			response.put("dealerHandValue", dealerFaceUpCard.getValue());
 		}
 
 		return response;
@@ -432,7 +432,7 @@ public class GameService {
 			winnings = (int) (1.5 * betAmount); // Blackjack typically pays 3:2
 		} else if (playerValue > 21) {
 			result.put("winner", "Dealer");
-			result.put("message", "Player busted!");
+			result.put("message", "Bust! Dealer wins.");
 			player.loseBet();
 			winnings = -betAmount;
 		} else if (dealerValue > 21 || playerValue > dealerValue) {
@@ -472,6 +472,7 @@ public class GameService {
 			Player player = optionalPlayer.get();
 			Map<String, Object> response = new HashMap<>();
 			response.put("balance", player.getBalance());
+			response.put("betAmount", player.getBet());
 			return response;
 		}
 		throw new RuntimeException("Player not found.");

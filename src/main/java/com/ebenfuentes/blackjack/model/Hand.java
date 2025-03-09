@@ -50,7 +50,7 @@ public class Hand {
         int aceCount = 0;
 
         for (Card card : cards) {
-            if (card.getRank().equals("A")) {
+            if (card.getRank().equals("Ace")) {
                 aceCount++;  // Count Aces separately
                 total += 1;  // Start by counting Aces as 1
             } else {
