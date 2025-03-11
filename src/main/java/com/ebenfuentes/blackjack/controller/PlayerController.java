@@ -37,7 +37,7 @@ public class PlayerController {
         return gameService.checkGameStatus(id);
     }
 
-    // ✅ Start a game for a player
+    // Start a game for a player
     @PostMapping("/{id}/start")
     public Map<String, Object> startGame(@PathVariable int id) {
         return gameService.startGame(id);
